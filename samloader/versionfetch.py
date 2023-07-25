@@ -5,6 +5,7 @@
 
 import xml.etree.ElementTree as ET
 import requests
+import urllib3
 
 def normalizevercode(vercode: str) -> str:
     """ Normalize a version code to four-part form. """
@@ -16,9 +17,12 @@ def normalizevercode(vercode: str) -> str:
     return "/".join(ver)
 
 def getlatestver(model: str, region: str) -> str:
+    """ Skip User-Agent """
+    headers = requests.utils.default_headers()
+    headers['User-Agent'] = urllib3.util.SKIP_HEADER
     """ Get the latest firmware version code for a model and region. """
     req = requests.get("https://fota-cloud-dn.ospserver.net/firmware/" \
-        + region + "/" + model + "/version.xml")
+        + region + "/" + model + "/version.xml", headers=headers)
     if req.status_code == 403:
         raise Exception("Model or region not found (403)")
     req.raise_for_status()
